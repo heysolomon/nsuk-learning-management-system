@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const studentSchema = mongoose.Schema(
+const lecturerSchema = mongoose.Schema(
   {
     first_name: {
       type: String,
@@ -11,33 +11,25 @@ const studentSchema = mongoose.Schema(
       type: String,
       required: [true, 'please enter last Name'],
     },
-    matric_number: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'MatricNumber',
-      required: [true, 'Please add your matric numbaer'],
-    },
     email: {
       type: String,
       required: [true, 'Please add an email'],
       unique: true,
     },
-    current_level: {
-      type: String,
-      required: [true, 'Please add level'],
-      unique: true,
-    },
-    course_of_study: String,
-    department: String,
-    faculty: String,
-    enrolled_courses: [
+    professional_summary: String,
+    assignedCourses: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Course',
+        ref: 'Course', // Reference to the Course model
       },
     ],
     password: {
       type: String,
       required: [true, 'Please add a password'],
+    },
+    role: {
+      type: String,
+      default: 'lecturer',
     },
   },
   {
@@ -45,6 +37,6 @@ const studentSchema = mongoose.Schema(
   },
 );
 
-const Student = mongoose.model('Student', studentSchema);
+const Lecturer = mongoose.model('Lecturer', lecturerSchema);
 
-module.exports = Student;
+module.exports = Lecturer;
