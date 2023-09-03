@@ -3,6 +3,13 @@
 const jwt = require('jsonwebtoken');
 const asyncHandler = require('express-async-handler');
 const Student = require('../models/studentModel');
+const HttpStatusCodes = require('../constants/HttpStatusCodes');
+
+const { UNAUTHORIZED } = HttpStatusCodes;
+
+// status code messages
+const TOKEN_ERR = 'Not authorized, no token';
+const ADMIN_ERR = 'Not authorized as an admin';
 
 const protect = asyncHandler(async (req, res, next) => {
   let token;
@@ -24,15 +31,24 @@ const protect = asyncHandler(async (req, res, next) => {
       next();
     } catch (error) {
       console.log(error);
-      res.status(401);
+      res.status(UNAUTHORIZED);
       throw new Error('Not authorized');
     }
   }
 
   if (!token) {
-    res.status(401);
-    throw new Error('Not authorized, no token');
+    res.status(UNAUTHORIZED).json({ message: TOKEN_ERR });
+    throw new Error(TOKEN_ERR);
   }
 });
 
-module.exports = { protect };
+const admin = (req, res, next) => {
+  if (req.user && req.user.isAdmin) {
+    next();
+  } else {
+    res.status(UNAUTHORIZED).json({ message: ADMIN_ERR });
+    throw new Error(ADMIN_ERR);
+  }
+};
+
+module.exports = { protect, admin };

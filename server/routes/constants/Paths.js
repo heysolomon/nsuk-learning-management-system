@@ -2,7 +2,7 @@ const Paths = {
   Base: '/api',
   Students: {
     Base: '/student',
-    Register: '/register',
+    Register: '/',
     Login: '/login',
   },
   Lecturers: {
@@ -13,6 +13,7 @@ const Paths = {
   },
   Admin: {
     Base: '/admin',
+    Student: '/students',
   },
 };
 
