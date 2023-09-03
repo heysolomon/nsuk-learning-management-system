@@ -43,7 +43,11 @@ const registerStudent = asyncHandler(async (req, res) => {
   }
 
   //   validate the student's matric number
-  const isMatricNumberValid = await MatricNumber.findOne({ first_name, last_name, matric_number });
+  const isMatricNumberValid = await MatricNumber.findOne({
+    first_name,
+    last_name,
+    matric_number,
+  });
 
   if (!isMatricNumberValid) {
     res.status(UNAUTHORIZED);
@@ -62,11 +66,12 @@ const registerStudent = asyncHandler(async (req, res) => {
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
+  console.log(isMatricNumberValid._id);
   const studentData = {
     first_name,
     middle_name,
     last_name,
-    matric_number,
+    matric_number: isMatricNumberValid._id,
     email,
     current_level,
     password: hashedPassword,

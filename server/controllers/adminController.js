@@ -3,7 +3,7 @@ const asyncHandler = require('express-async-handler');
 const HttpStatusCodes = require('../constants/HttpStatusCodes');
 const MatricNumber = require('../models/matricNumberModel');
 
-const { BAD_REQUEST, CREATED, UNAUTHORIZED } = HttpStatusCodes;
+const { BAD_REQUEST, CREATED } = HttpStatusCodes;
 
 // status code messages
 const MATRIC_NUM_ERR = 'Matric Number exists';
@@ -17,10 +17,33 @@ const addStudentMN = asyncHandler(async (req, res) => {
   }
 
   //   check if maric number exists in the database
-  const matricNumberExists = await MatricNumber.findOne({ matric_number });
+  const matricNumberExists = await MatricNumber.findOne({
+    first_name,
+    last_name,
+    matric_number,
+  });
 
   if (matricNumberExists) {
     res.status(BAD_REQUEST).json({ message: MATRIC_NUM_ERR });
+  }
+
+  // add student data
+  const student = await MatricNumber.create({
+    first_name,
+    last_name,
+    matric_number,
+  });
+
+  if (student) {
+    res.status(CREATED).json({
+      _id: student.id,
+      first_name: student.first_name,
+      last_name: student.name,
+      matric_number: student.matric_number,
+    });
+  } else {
+    res.status(BAD_REQUEST);
+    throw new Error('Invalid user data');
   }
 });
 
