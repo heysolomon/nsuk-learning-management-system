@@ -12,19 +12,17 @@ const studentSchema = mongoose.Schema(
       required: [true, 'please enter last Name'],
     },
     matric_number: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'MatricNumber',
+      type: String,
       required: [true, 'Please add your matric numbaer'],
+      unique: true,
     },
     email: {
       type: String,
       required: [true, 'Please add an email'],
-      unique: true,
     },
     current_level: {
       type: String,
       required: [true, 'Please add level'],
-      unique: true,
     },
     course_of_study: String,
     department: String,

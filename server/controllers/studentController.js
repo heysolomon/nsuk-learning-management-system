@@ -10,8 +10,9 @@ const MatricNumber = require('../models/matricNumberModel');
 const { BAD_REQUEST, CREATED, UNAUTHORIZED } = HttpStatusCodes;
 
 // status code messages
-const USER_EXISTS_ERR = 'User already exists with the phone number';
-const COLLECTOR_NOT_FOUND_ERR = 'Collector not found';
+const FIELDS_ERR = 'Please add all fields';
+const USER_EXISTS_ERR = 'User already exists';
+const STUDENT_VALIDATION_ERR = 'Student validation failed, please make sure your name matches the matric number';
 const REGISTER_USER_OK = 'User registered successfully!';
 const REGISTER_USER_ERR = 'Failed to register user.';
 const SAVE_USER_TO_DB_ERR = 'Failed to save new user';
@@ -38,8 +39,7 @@ const registerStudent = asyncHandler(async (req, res) => {
     || !current_level
     || !password
   ) {
-    res.status(BAD_REQUEST);
-    throw new Error('Please add all fields');
+    res.status(BAD_REQUEST).json({ message: FIELDS_ERR });
   }
 
   //   validate the student's matric number
@@ -50,28 +50,25 @@ const registerStudent = asyncHandler(async (req, res) => {
   });
 
   if (!isMatricNumberValid) {
-    res.status(UNAUTHORIZED);
-    throw new Error('Invalid matric number');
+    res.status(UNAUTHORIZED).json({ message: STUDENT_VALIDATION_ERR });
   }
 
   // Check if student exists
   const studentExists = await Student.findOne({ matric_number });
 
   if (studentExists) {
-    res.status(BAD_REQUEST);
-    throw new Error('Student already exists');
+    res.status(BAD_REQUEST).json({ message: USER_EXISTS_ERR });
   }
 
   // Hash password
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
-  console.log(isMatricNumberValid._id);
   const studentData = {
     first_name,
     middle_name,
     last_name,
-    matric_number: isMatricNumberValid._id,
+    matric_number,
     email,
     current_level,
     password: hashedPassword,
@@ -90,19 +87,18 @@ const registerStudent = asyncHandler(async (req, res) => {
       token: generateToken(student._id),
     });
   } else {
-    res.status(BAD_REQUEST);
-    throw new Error('Invalid user data');
+    res.status(BAD_REQUEST).json({ message: 'Invalid user data' });
   }
 });
 
 // @desc    Authenticate a user
 // @route   POST /api/users/login
 // @access  Public
-const loginUser = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+const loginStudent = asyncHandler(async (req, res) => {
+  const { matric_number, password } = req.body;
 
   // Check for user email
-  const user = await User.findOne({ email });
+  const user = await Student.findOne({ matric_number });
 
   if (user && (await bcrypt.compare(password, user.password))) {
     res.json({
@@ -126,6 +122,6 @@ const getMe = asyncHandler(async (req, res) => {
 
 module.exports = {
   registerStudent,
-  loginUser,
+  loginStudent,
   getMe,
 };

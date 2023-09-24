@@ -42,8 +42,7 @@ const addStudentMN = asyncHandler(async (req, res) => {
       matric_number: student.matric_number,
     });
   } else {
-    res.status(BAD_REQUEST);
-    throw new Error('Invalid user data');
+    res.status(BAD_REQUEST).json({ message: 'Invalid user data' });
   }
 });
 
