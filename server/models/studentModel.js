@@ -24,9 +24,18 @@ const studentSchema = mongoose.Schema(
       type: String,
       required: [true, 'Please add level'],
     },
-    course_of_study: String,
-    department: String,
-    faculty: String,
+    course_of_study: {
+      type: String,
+      default: 'B.sc Computer Science',
+    },
+    department: {
+      type: String,
+      default: 'Computer Science',
+    },
+    faculty: {
+      type: String,
+      default: 'Natural and Applied Science',
+    },
     enrolled_courses: [
       {
         type: mongoose.Schema.Types.ObjectId,
