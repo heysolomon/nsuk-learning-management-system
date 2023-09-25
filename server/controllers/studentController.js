@@ -12,10 +12,10 @@ const { BAD_REQUEST, CREATED, UNAUTHORIZED } = HttpStatusCodes;
 // status code messages
 const FIELDS_ERR = 'Please add all fields';
 const USER_EXISTS_ERR = 'User already exists';
-const STUDENT_VALIDATION_ERR = 'Student validation failed, please make sure your name matches the matric number';
+const STUDENT_VALIDATION_ERR = 'validation failed, please make sure your name matches the matric number';
 const REGISTER_USER_OK = 'User registered successfully!';
 const REGISTER_USER_ERR = 'Failed to register user.';
-const SAVE_USER_TO_DB_ERR = 'Failed to save new user';
+const LOGIN_ERR = 'failed, please check to make sure you entered the right details';
 
 // @desc    Register new student
 // @route   POST /api/student
@@ -78,7 +78,21 @@ const registerStudent = asyncHandler(async (req, res) => {
   const student = await Student.create(studentData);
 
   if (student) {
+    // change matric number activity
+    // Define the conditions to find the document you want to update
+    const conditions = { matric_number };
+
+    // Define the update you want to make, including the boolean field
+    const update = { isActive: true };
+
+    try {
+      await MatricNumber.findOneAndUpdate(conditions, update, { new: true });
+    } catch (error) {
+      // Handle the error
+      console.error('Error updating student:', error);
+    }
     res.status(CREATED).json({
+      message: REGISTER_USER_OK,
       _id: student.id,
       first_name: student.first_name,
       middle_name: student.middle_name !== '' ? student.middle_name : undefined,
@@ -87,7 +101,7 @@ const registerStudent = asyncHandler(async (req, res) => {
       token: generateToken(student._id),
     });
   } else {
-    res.status(BAD_REQUEST).json({ message: 'Invalid user data' });
+    res.status(BAD_REQUEST).json({ message: REGISTER_USER_ERR });
   }
 });
 
@@ -96,6 +110,10 @@ const registerStudent = asyncHandler(async (req, res) => {
 // @access  Public
 const loginStudent = asyncHandler(async (req, res) => {
   const { matric_number, password } = req.body;
+
+  if (!matric_number || !password) {
+    res.status(BAD_REQUEST).json({ message: FIELDS_ERR });
+  }
 
   // Check for user email
   const user = await Student.findOne({ matric_number });
@@ -108,8 +126,7 @@ const loginStudent = asyncHandler(async (req, res) => {
       token: generateToken(user._id),
     });
   } else {
-    res.status(400);
-    throw new Error('Invalid credentials');
+    res.status(BAD_REQUEST).json({ message: LOGIN_ERR });
   }
 });
 

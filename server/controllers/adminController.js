@@ -40,6 +40,7 @@ const addStudentMN = asyncHandler(async (req, res) => {
       first_name: student.first_name,
       last_name: student.name,
       matric_number: student.matric_number,
+      status: student.isActive,
     });
   } else {
     res.status(BAD_REQUEST).json({ message: 'Invalid user data' });
