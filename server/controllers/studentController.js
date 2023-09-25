@@ -6,6 +6,7 @@ const Student = require('../models/studentModel');
 const HttpStatusCodes = require('../constants/HttpStatusCodes');
 const generateToken = require('../utils/genrateToken');
 const MatricNumber = require('../models/matricNumberModel');
+const cloudinaryMediaUpload = require('../config/cloudinary');
 
 const { BAD_REQUEST, CREATED, UNAUTHORIZED } = HttpStatusCodes;
 
@@ -73,12 +74,11 @@ const registerStudent = asyncHandler(async (req, res) => {
     current_level,
     password: hashedPassword,
   };
-
   // Create user
   const student = await Student.create(studentData);
 
   if (student) {
-    // change matric number activity
+    // change matric number status
     // Define the conditions to find the document you want to update
     const conditions = { matric_number };
 
@@ -91,6 +91,34 @@ const registerStudent = asyncHandler(async (req, res) => {
       // Handle the error
       console.error('Error updating student:', error);
     }
+
+    // uploading profile picture to cloudinary
+    const filePath = req.file.path;
+    const targetFolder = 'students_profile_pictures';
+
+    cloudinaryMediaUpload(filePath, targetFolder)
+      .then((result) => {
+        // Handle the result here, which contains the URL and public ID of the uploaded media
+        console.log('Media uploaded successfully:');
+
+        Student.findOneAndUpdate(
+          { matric_number }, // Specify the condition to find the student
+          { picture: result.url }, // Define the update to set the 'picture' field
+          { new: true }, // Return the updated document
+        )
+          .then(() => {
+            console.log('added url to picture');
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      })
+      .catch((error) => {
+        // Handle errors, e.g., if the upload to Cloudinary fails
+        console.error('Upload error:', error);
+      });
+
+    // response
     res.status(CREATED).json({
       message: REGISTER_USER_OK,
       _id: student.id,
@@ -98,7 +126,7 @@ const registerStudent = asyncHandler(async (req, res) => {
       middle_name: student.middle_name !== '' ? student.middle_name : undefined,
       last_name: student.name,
       email: student.email,
-      token: generateToken(student._id),
+      picture: student.picture,
     });
   } else {
     res.status(BAD_REQUEST).json({ message: REGISTER_USER_ERR });

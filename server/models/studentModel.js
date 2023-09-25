@@ -20,6 +20,10 @@ const studentSchema = mongoose.Schema(
       type: String,
       required: [true, 'Please add an email'],
     },
+    picture: {
+      type: String,
+      default: '',
+    },
     current_level: {
       type: String,
       required: [true, 'Please add level'],

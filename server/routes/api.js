@@ -5,6 +5,7 @@ const {
   loginStudent,
 } = require('../controllers/studentController');
 const { addStudentMN } = require('../controllers/adminController');
+const upload = require('../config/multer');
 
 const { Router } = express;
 
@@ -15,7 +16,9 @@ const adminRouter = Router();
 // @desc    Register new student
 // @route   POST /api/student
 // @access  Public
-studentRouter.route(Paths.Students.Register).post(registerStudent);
+studentRouter
+  .route(Paths.Students.Register)
+  .post(upload.single('picture'), registerStudent);
 
 // @desc    Login student
 // @route   POST /api/student
