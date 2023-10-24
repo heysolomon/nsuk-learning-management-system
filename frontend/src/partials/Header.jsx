@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+/* eslint-disable react/prop-types */
+import React, { useState } from 'react';
 
-import SearchModal from "../components/ModalSearch";
-import Notifications from "../components/DropdownNotifications";
-import Help from "../components/DropdownHelp";
-import UserMenu from "../components/DropdownProfile";
-import ThemeToggle from "../components/ThemeToggle";
-import { useSelector } from "react-redux";
+import { useSelector } from 'react-redux';
+import SearchModal from '../components/ModalSearch';
+import Notifications from '../components/DropdownNotifications';
+import UserMenu from '../components/DropdownProfile';
+import ThemeToggle from '../components/ThemeToggle';
 
 function Header({ sidebarOpen, setSidebarOpen }) {
   const [searchModalOpen, setSearchModalOpen] = useState(false);
@@ -18,6 +18,7 @@ function Header({ sidebarOpen, setSidebarOpen }) {
           <div className="flex">
             {/* Hamburger button */}
             <button
+              type="button"
               className="text-slate-500 hover:text-slate-600 lg:hidden"
               aria-controls="sidebar"
               aria-expanded={sidebarOpen}
@@ -43,8 +44,9 @@ function Header({ sidebarOpen, setSidebarOpen }) {
           <div className="flex items-center space-x-3">
             <div>
               <button
+                type="button"
                 className={`w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600/80 rounded-full ml-3 ${
-                  searchModalOpen && "bg-slate-200"
+                  searchModalOpen && 'bg-slate-200'
                 }`}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -76,7 +78,6 @@ function Header({ sidebarOpen, setSidebarOpen }) {
               />
             </div>
             <Notifications align="right" />
-            <Help align="right" />
             <ThemeToggle />
             {/*  Divider */}
             <hr className="w-px h-6 bg-slate-200 dark:bg-slate-700 border-none" />

@@ -1,9 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
-import Transition from "../utils/Transition";
+/* eslint-disable react/prop-types */
+import React, { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import Transition from '../utils/Transition';
 
-import UserAvatar from "../images/user-avatar-32.png";
-import { useSelector } from "react-redux";
+import UserAvatar from '../images/user-avatar-32.png';
 
 function DropdownProfile({ align }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -16,15 +17,14 @@ function DropdownProfile({ align }) {
     const clickHandler = ({ target }) => {
       if (!dropdown.current) return;
       if (
-        !dropdownOpen ||
-        dropdown.current.contains(target) ||
-        trigger.current.contains(target)
-      )
-        return;
+        !dropdownOpen
+        || dropdown.current.contains(target)
+        || trigger.current.contains(target)
+      ) { return; }
       setDropdownOpen(false);
     };
-    document.addEventListener("click", clickHandler);
-    return () => document.removeEventListener("click", clickHandler);
+    document.addEventListener('click', clickHandler);
+    return () => document.removeEventListener('click', clickHandler);
   });
 
   // close if the esc key is pressed
@@ -33,8 +33,8 @@ function DropdownProfile({ align }) {
       if (!dropdownOpen || keyCode !== 27) return;
       setDropdownOpen(false);
     };
-    document.addEventListener("keydown", keyHandler);
-    return () => document.removeEventListener("keydown", keyHandler);
+    document.addEventListener('keydown', keyHandler);
+    return () => document.removeEventListener('keydown', keyHandler);
   });
 
   const { userInfo } = useSelector((state) => state.user);
@@ -42,6 +42,7 @@ function DropdownProfile({ align }) {
   return (
     <div className="relative inline-flex">
       <button
+        type="button"
         ref={trigger}
         className="inline-flex justify-center items-center group"
         aria-haspopup="true"
@@ -57,7 +58,9 @@ function DropdownProfile({ align }) {
         />
         <div className="flex items-center truncate">
           <span className="truncate ml-2 text-sm font-medium dark:text-slate-300 group-hover:text-slate-800 dark:group-hover:text-slate-200">
-            {userInfo?.firstName} {userInfo?.lastName}
+            {userInfo?.firstName}
+            {' '}
+            {userInfo?.lastName}
           </span>
           <svg
             className="w-3 h-3 shrink-0 ml-1 fill-current text-slate-400"
@@ -70,7 +73,7 @@ function DropdownProfile({ align }) {
 
       <Transition
         className={`origin-top-right z-10 absolute top-full min-w-44 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 py-1.5 rounded shadow-lg overflow-hidden mt-1 ${
-          align === "right" ? "right-0" : "left-0"
+          align === 'right' ? 'right-0' : 'left-0'
         }`}
         show={dropdownOpen}
         enter="transition ease-out duration-200 transform"
@@ -87,7 +90,9 @@ function DropdownProfile({ align }) {
         >
           <div className="pt-0.5 pb-2 px-3 mb-1 border-b border-slate-200 dark:border-slate-700">
             <div className="font-medium text-slate-800 dark:text-slate-100">
-              {userInfo?.firstName} {userInfo?.lastName}
+              {userInfo?.firstName}
+              {' '}
+              {userInfo?.lastName}
             </div>
             <div className="text-xs text-slate-500 dark:text-slate-400 italic">
               Student
