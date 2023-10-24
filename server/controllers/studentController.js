@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable camelcase */
 const bcrypt = require('bcryptjs');
@@ -32,103 +33,101 @@ const registerStudent = asyncHandler(async (req, res) => {
     password,
   } = req.body;
 
-  if (
-    !first_name
-    || !last_name
-    || !matric_number
-    || !email
-    || !current_level
-    || !password
-  ) {
-    res.status(BAD_REQUEST).json({ message: FIELDS_ERR });
-  }
-
-  //   validate the student's matric number
-  const isMatricNumberValid = await MatricNumber.findOne({
-    first_name,
-    last_name,
-    matric_number,
-  });
-
-  if (!isMatricNumberValid) {
-    res.status(UNAUTHORIZED).json({ message: STUDENT_VALIDATION_ERR });
-  }
-
-  // Check if student exists
-  const studentExists = await Student.findOne({ matric_number });
-
-  if (studentExists) {
-    res.status(BAD_REQUEST).json({ message: USER_EXISTS_ERR });
-  }
-
-  // Hash password
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
-
-  const studentData = {
-    first_name,
-    middle_name,
-    last_name,
-    matric_number,
-    email,
-    current_level,
-    password: hashedPassword,
-  };
-  // Create user
-  const student = await Student.create(studentData);
-
-  if (student) {
-    // change matric number status
-    // Define the conditions to find the document you want to update
-    const conditions = { matric_number };
-
-    // Define the update you want to make, including the boolean field
-    const update = { isActive: true };
-
-    try {
-      await MatricNumber.findOneAndUpdate(conditions, update, { new: true });
-    } catch (error) {
-      // Handle the error
-      console.error('Error updating student:', error);
+  try {
+    // Check if any required field is missing
+    if (
+      !first_name
+      || !last_name
+      || !matric_number
+      || !email
+      || !current_level
+      || !password
+    ) {
+      return res.status(BAD_REQUEST).json({ message: FIELDS_ERR });
     }
 
-    // uploading profile picture to cloudinary
-    const filePath = req.file.path;
-    const targetFolder = 'students_profile_pictures';
-
-    cloudinaryMediaUpload(filePath, targetFolder)
-      .then((result) => {
-        // Handle the result here, which contains the URL and public ID of the uploaded media
-        console.log('Media uploaded successfully:');
-
-        Student.findOneAndUpdate(
-          { matric_number }, // Specify the condition to find the student
-          { picture: result.url }, // Define the update to set the 'picture' field
-          { new: true }, // Return the updated document
-        )
-          .then(() => {
-            console.log('added url to picture');
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-      })
-      .catch((error) => {
-        // Handle errors, e.g., if the upload to Cloudinary fails
-        console.error('Upload error:', error);
-      });
-
-    // response
-    res.status(CREATED).json({
-      message: REGISTER_USER_OK,
-      _id: student.id,
-      first_name: student.first_name,
-      middle_name: student.middle_name !== '' ? student.middle_name : undefined,
-      last_name: student.name,
-      email: student.email,
-      picture: student.picture,
+    // Check if the student's matric number is valid
+    const isMatricNumberValid = await MatricNumber.findOne({
+      first_name,
+      last_name,
+      matric_number,
     });
-  } else {
+
+    if (!isMatricNumberValid) {
+      return res.status(UNAUTHORIZED).json({ message: STUDENT_VALIDATION_ERR });
+    }
+
+    // Check if the student already exists
+    const studentExists = await Student.findOne({ matric_number });
+
+    if (studentExists) {
+      return res.status(BAD_REQUEST).json({ message: USER_EXISTS_ERR });
+    }
+
+    // Hash the password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Create the student
+    const studentData = {
+      first_name,
+      middle_name,
+      last_name,
+      matric_number,
+      email,
+      current_level,
+      password: hashedPassword,
+    };
+    const student = await Student.create(studentData);
+
+    if (student) {
+      // Change matric number status
+      await MatricNumber.findOneAndUpdate(
+        { matric_number },
+        { isActive: true },
+      );
+      // Uploading profile picture to Cloudinary
+      const filePath = req.file.path;
+      console.log(`${filePath}`.green.underline);
+      const targetFolder = 'students_profile_pictures';
+
+      try {
+        const result = await cloudinaryMediaUpload(filePath, targetFolder);
+
+        if (result) {
+          // Update the 'picture' field in the student document
+          await Student.findOneAndUpdate(
+            { matric_number },
+            { picture: result.url },
+          );
+
+          // Respond with the updated student data
+          return res.status(CREATED).json({
+            message: REGISTER_USER_OK,
+            _id: student.id,
+            first_name: student.first_name,
+            middle_name: student.middle_name || undefined,
+            last_name: student.name,
+            email: student.email,
+            picture: result.url,
+          });
+        }
+        // Handle Cloudinary upload failure
+        await Student.deleteOne({ _id: student._id });
+        return res.status(BAD_REQUEST).json({ message: REGISTER_USER_ERR });
+      } catch (error) {
+        // Handle Cloudinary upload errors
+        console.error('Cloudinary upload error:', error);
+        await Student.deleteOne({ _id: student._id });
+        return res.status(BAD_REQUEST).json({ message: REGISTER_USER_ERR });
+      }
+    } else {
+      // Handle student creation failure
+      return res.status(BAD_REQUEST).json({ message: REGISTER_USER_ERR });
+    }
+  } catch (error) {
+    // Handle any unexpected errors
+    console.error('Error:', error);
     res.status(BAD_REQUEST).json({ message: REGISTER_USER_ERR });
   }
 });
