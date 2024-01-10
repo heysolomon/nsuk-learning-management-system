@@ -1,7 +1,7 @@
 {
-  "name": "learning-management-system-server",
+  "name": "biometric-system",
   "version": "1.0.0",
-  "description": "this is a learning management system for NSUK",
+  "description": "bimometric system",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

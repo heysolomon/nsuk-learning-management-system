@@ -1,32 +1,28 @@
-/* eslint-disable consistent-return */
-/* eslint-disable no-underscore-dangle */
-/* eslint-disable camelcase */
 const bcrypt = require('bcryptjs');
 const asyncHandler = require('express-async-handler');
 const Student = require('../models/userModel');
 const HttpStatusCodes = require('../constants/HttpStatusCodes');
 const generateToken = require('../utils/genrateToken');
 const User = require('../models/userModel');
+const { UareU, CONSTANTS } = require('uareu-node'); // Import
 
 const { BAD_REQUEST, CREATED, UNAUTHORIZED } = HttpStatusCodes;
 
 // status code messages
 const FIELDS_ERR = 'Please add all fields';
 const USER_EXISTS_ERR = 'User already exists';
-const STUDENT_VALIDATION_ERR = 'validation failed, please make sure your name matches the matric number';
-const REGISTER_USER_OK = 'User registered successfully!';
 const REGISTER_USER_ERR = 'Failed to register user.';
 const LOGIN_ERR = 'failed, please check to make sure you entered the right details';
 
-// @desc    Register new student
-// @route   POST /api/student
+// @desc    Register new user
+// @route   POST /api/user
 // @access  Public
-const registerStudent = asyncHandler(async (req, res) => {
+const registerUser = asyncHandler(async (req, res) => {
   const {
     first_name,
     last_name,
     email,
-    password,
+    biometric,
   } = req.body;
 
   try {
@@ -35,7 +31,7 @@ const registerStudent = asyncHandler(async (req, res) => {
       !first_name
       || !last_name
       || !email
-      || !password
+      || !biometric
     ) {
       return res.status(BAD_REQUEST).json({ message: FIELDS_ERR });
     }
@@ -47,18 +43,41 @@ const registerStudent = asyncHandler(async (req, res) => {
       return res.status(BAD_REQUEST).json({ message: USER_EXISTS_ERR });
     }
 
-    // Hash the password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const uareu = UareU.getInstance(); // Get a unique instance of library handler.
+    let reader; // Create a variable to keep the reader handle after 'open' the device.
 
-    // Create the student
-    const studentData = {
+     uareu.loadLibs() // Load libs
+     .then(() => uareu.dpfpddInit()) // Init libs
+     .then(() => uareu.dpfpddQueryDevices()) // Search reader devices connected
+     .then((res) => uareu.dpfpddOpen(res.devicesList[0])) // 'Open' the reader device, it's needed for use others functions like: dpfpddCaptureAsync
+     .then((res) => { if (res) reader = res }) // Set reader variable
+     .catch((err) => { throw err; });
+
+ // After this initial configuration you can create some functions to capture a fingerprint, identify it, compare it and etc...
+ // Note: Identify and Compare are different, the main diference between it are: - Compare only compares two fingerprints;  - Identify compares a fingerprint against a list of fingerprints;
+
+ uareu.dpfpddCaptureAsync(reader, CONSTANTS.DPFPDD_IMAGE_FMT.DPFPDD_IMG_FMT_ANSI381, CONSTANTS.DPFPDD_IMAGE_PROC.DPFPDD_IMG_PROC_DEFAULT, (data, dataSize) => {
+     // Here you receive the data of a fingerprint image data (FID)
+     // Before compare it, you need to generate a fingerprint minutie data (FMD)
+     uareu.dpfjCreateFmdFromFid(data, CONSTANTS.DPFJ_FMD_FORMAT.DPFJ_FMD_ANSI_378_2004)
+     .then((res) => {
+         // Here you receive the FMD and then you can compare it, save it to compare with the next fingerprint, identify it with a database, etc...
+         return uareu.dpfjIdentify(res, [FMD, LIST]);
+     })
+     .then((res) => {
+         // Finger was identified or not? The answer you get here.
+     })
+     .catch((err) => console.log(err));
+ });
+
+    // Create the user
+    const userData = {
       first_name,
       last_name,
       email,
-      password: hashedPassword,
+      biometric
     };
-    const student = await Student.create(studentData);
+    const student = await User.create(userData);
 
     if (student) {
       
@@ -76,7 +95,7 @@ const registerStudent = asyncHandler(async (req, res) => {
 // @desc    Authenticate a user
 // @route   POST /api/users/login
 // @access  Public
-const loginStudent = asyncHandler(async (req, res) => {
+const loginUser = asyncHandler(async (req, res) => {
   const { matric_number, password } = req.body;
 
   if (!matric_number || !password) {
@@ -106,7 +125,7 @@ const getMe = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
-  registerStudent,
-  loginStudent,
+  registerUser,
+  loginUser,
   getMe,
 };

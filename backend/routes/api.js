@@ -4,7 +4,6 @@ const {
   registerStudent,
   loginStudent,
 } = require('../controllers/studentController');
-const { addStudentMN } = require('../controllers/adminController');
 const upload = require('../config/multer');
 
 const { Router } = express;
