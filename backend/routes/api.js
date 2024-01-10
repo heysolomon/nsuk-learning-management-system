@@ -10,29 +10,20 @@ const upload = require('../config/multer');
 const { Router } = express;
 
 const router = Router();
-const studentRouter = Router();
-const adminRouter = Router();
+const userRouter = Router();
 
 // @desc    Register new student
 // @route   POST /api/student
 // @access  Public
-studentRouter
-  .route(Paths.Students.Register)
+userRouter
+  .route(Paths.User.Register)
   .post(upload.single('picture'), registerStudent);
 
-// @desc    Login student
-// @route   POST /api/student
+// @desc    Login user
+// @route   POST /api/user
 // @access  Public
-studentRouter.post(Paths.Students.Login, loginStudent);
+userRouter.post(Paths.User.Login, loginStudent);
 
-// admin routes
-
-// @desc    add matric number to db
-// @route   POST /api/admin/students
-// @access  Private
-adminRouter.route(Paths.Admin.Student).post(addStudentMN);
-
-router.use(Paths.Students.Base, studentRouter);
-router.use(Paths.Admin.Base, adminRouter);
+router.use(Paths.User.Base, userRouter);
 
 module.exports = router;
