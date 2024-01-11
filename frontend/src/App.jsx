@@ -5,20 +5,11 @@ import './css/style.css';
 
 import './charts/ChartjsConfig';
 
-// Import pages
-import Dashboard from './pages/student/dashboard/Dashboard';
-import { SignUp } from './pages/student/auth/SignUp';
 import ErrorPage from './pages/Error';
 import Support from './pages/Support';
-import SignIn from './pages/student/auth/SignIn';
 import AdminSignIn from './pages/admin/auth/AdminSignIn';
 import AdminDashboard from './pages/admin/dashboard/AdminDashboard';
-import StudentAuth from './pages/student/auth/StudentAuth';
 import AdminAuth from './pages/admin/auth/AdminAuth';
-import {
-  ForgotPasswordEmailVerified,
-  ForgotPasswordVerifyEmail,
-} from './pages/student/auth/ResetPassword';
 import AdminDashboardHome from './pages/admin/dashboard/Home';
 import Courses from './pages/admin/dashboard/courses/Programs';
 
@@ -33,23 +24,6 @@ function App() {
 
   return (
     <Routes>
-      {/* student auth */}
-      <Route path="/" element={<StudentAuth />}>
-        <Route path="" element={<SignIn />} />
-        <Route path="signup" element={<SignUp />} />
-        <Route
-          path="password-reset-verify-email"
-          element={<ForgotPasswordVerifyEmail />}
-        />
-        <Route
-          path="verify-email-success"
-          element={<ForgotPasswordEmailVerified />}
-        />
-      </Route>
-
-      {/* student dashboard */}
-      <Route path="/dashboard" element={<Dashboard />} />
-
       {/* lecturers auth */}
       <Route path="/admin" element={<AdminAuth />}>
         <Route path="" element={<AdminSignIn />} />

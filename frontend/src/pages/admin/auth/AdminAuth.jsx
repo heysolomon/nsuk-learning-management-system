@@ -1,7 +1,7 @@
-import React from "react";
-import { Outlet } from "react-router-dom";
+import React from 'react';
+import { Outlet } from 'react-router-dom';
 
-const AdminAuth = () => {
+function AdminAuth() {
   return (
     <div className="h-screen md:bg-white flex items-center justify-center md:grid grid-cols-2">
       <Outlet />
@@ -14,6 +14,6 @@ const AdminAuth = () => {
       </div>
     </div>
   );
-};
+}
 
 export default AdminAuth;
